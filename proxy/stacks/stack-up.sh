@@ -1,6 +1,6 @@
 #!/bin/bash
 
-PROFILE="--profile bluefin"
+PROFILE="--profile witty"
 
 case $1 in
     ecr)
@@ -13,12 +13,16 @@ case $1 in
         ${PROFILE}
         ;;
     service)
+        account=$(aws sts get-caller-identity ${PROFILE} --query "Account" --output text)
+        sed -i -e "s/132093761664/$account/g" ../package.json
+        sed -i -e "s|--profile bluefin|$PROFILE|g" ../package.json
+        yarn run deploy
         aws cloudformation deploy \
         --template-file service.stack.yml \
         --stack-name video-streaming-proxy \
         --capabilities CAPABILITY_NAMED_IAM \
         --parameter-overrides \
-        Version=1.0.9 \
+        Version=1.0.0 \
         DesiredCount=1 \
         ${PROFILE}
         ;;

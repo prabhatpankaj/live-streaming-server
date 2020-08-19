@@ -15,3 +15,48 @@ ffmpeg -stream_loop -1 -re -i ~/Downloads/test-video.mp4 -c copy -f flv "rtmp://
 
 # Try this:
 h264_nvenc uses the NVidia hardware assisted H.264 video encoder
+
+
+# Installation
+
+* create stacks
+
+```
+cd live-streaming-server/stacks && sh stack-up.sh assets
+
+sh stack-up.sh vpc
+
+sh stack-up.sh security
+
+sh stack-up.sh ecs
+
+sh stack-up.sh redis
+
+```
+* create server
+```
+cd live-streaming-server/server/stacks && sh stack-up.sh ecr
+sh stack-up.sh service
+
+```
+
+* create proxy
+```
+cd live-streaming-server/proxy/stacks && sh stack-up.sh ecr
+sh stack-up.sh service
+
+```
+
+* create origin
+```
+cd live-streaming-server/origin/stacks && sh stack-up.sh ecr
+sh stack-up.sh service
+
+```
+
+* create proxy-dns.stack
+
+```
+cd live-streaming-server/stacks && sh stack-up.sh proxy-dns
+
+```

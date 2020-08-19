@@ -1,6 +1,8 @@
 #!/bin/bash
 
-PROFILE="--profile bluefin"
+PROFILE="--profile witty"
+domain=wittychamps.com
+subdomain=live.wittychamps.com
 
 case $1 in
     ecr)
@@ -13,14 +15,21 @@ case $1 in
         ${PROFILE}
         ;;
     service)
+        SSLArn=$(aws acm list-certificates --certificate-statuses ISSUED ${PROFILE} --query "CertificateSummaryList[?DomainName=='${domain}'][CertificateArn]" --output text)
+        account=$(aws sts get-caller-identity ${PROFILE} --query "Account" --output text)
+        sed -i -e "s/132093761664/$account/g" ../package.json
+        sed -i -e "s|--profile bluefin|$PROFILE|g" ../package.json
+        yarn run deploy
         aws cloudformation deploy \
         --template-file service.stack.yml \
         --stack-name video-streaming-origin \
         --capabilities CAPABILITY_NAMED_IAM \
         --parameter-overrides \
-        Version=1.0.11 \
+        Version=1.0.0 \
         DesiredCount=1 \
-        Domain=live.finbits.io \
+        TLD=${domain} \
+        Domain=${subdomain} \
+        SSLArn=${SSLArn} \
         ${PROFILE}
         ;;
     *)

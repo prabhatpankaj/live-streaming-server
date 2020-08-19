@@ -1,6 +1,10 @@
 #!/bin/bash
 
-PROFILE="--profile bluefin"
+PROFILE="--profile witty"
+domain='wittychamps.com'
+subdomain='rtmp.wittychamps.com'
+redisdomain='wittychamps.com'
+redisdomaincache='cache.wittychamps.com'
 
 case $1 in
     vpc)
@@ -20,12 +24,15 @@ case $1 in
         ${PROFILE}
         ;;
     proxy-dns)
+        Proxy1=$(aws ec2 describe-network-interfaces --network-interface-ids $(aws ecs describe-tasks --cluster video-streaming --tasks $(aws ecs list-tasks --cluster video-streaming --service-name video-streaming-proxy --query "taskArns" --output text ${PROFILE}) --query "tasks[0].attachments[0].details[?name=='networkInterfaceId'].value" --output text ${PROFILE}) --query "NetworkInterfaces[0].Association.PublicIp" --output text ${PROFILE})
         aws cloudformation deploy \
         --template-file proxy-dns.stack.yml \
         --stack-name video-streaming-proxy-dns \
         --capabilities CAPABILITY_IAM \
         --parameter-overrides \
-        Proxy1=$(aws ec2 describe-network-interfaces --network-interface-ids $(aws ecs describe-tasks --cluster video-streaming --tasks $(aws ecs list-tasks --cluster video-streaming --service-name video-streaming-proxy --query "taskArns" --output text ${PROFILE}) --query "tasks[0].attachments[0].details[?name=='networkInterfaceId'].value" --output text ${PROFILE}) --query "NetworkInterfaces[0].Association.PublicIp" --output text ${PROFILE}) \
+        Proxy1=${Proxy1} \
+        TLD=${domain} \
+        Domain=${subdomain} \
         ${PROFILE}
         ;;
     ecs)
@@ -42,6 +49,9 @@ case $1 in
         --template-file redis.stack.yml \
         --stack-name video-streaming-redis \
         --capabilities CAPABILITY_IAM \
+        --parameter-overrides \
+        TLD=${redisdomain} \
+        Domain=${redisdomaincache} \
         ${PROFILE}
         ;;
     security)

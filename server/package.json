@@ -6,11 +6,11 @@
   "scripts": {
     "test": "NODE_ENV=development node app.js",
     "start": "node app.js",
-    "get-login": "aws ecr get-login --registry-ids 132093761664 --no-include-email --profile bluefin",
+    "get-login": "aws ecr get-login-password --profile bluefin | docker login --username AWS --password-stdin 132093761664.dkr.ecr.us-east-1.amazonaws.com/video-streaming-server",
     "build": "docker build -t video-streaming-server .",
-    "tag": "docker tag video-streaming-origin 132093761664.dkr.ecr.us-east-1.amazonaws.com/video-streaming-server:$npm_package_version",
+    "tag": "docker tag video-streaming-server 132093761664.dkr.ecr.us-east-1.amazonaws.com/video-streaming-server:$npm_package_version",
     "push": "docker push 132093761664.dkr.ecr.us-east-1.amazonaws.com/video-streaming-server:$npm_package_version",
-    "deploy": "yarn run build && yarn run tag && yarn run push"
+    "deploy": "yarn run get-login && yarn run build && yarn run tag && yarn run push"
   },
   "repository": {
     "type": "git",
